@@ -1,0 +1,18 @@
+@import './base.css';
+
+#app {
+
+  margin: 0 auto;
+  padding: 2rem;
+  font-weight: normal;
+
+  background-image: url('/background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 93vh;
+}
+
+body{
+  margin: 0;
+}

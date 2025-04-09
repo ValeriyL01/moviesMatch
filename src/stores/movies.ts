@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { movieTitles } from '@/data/movieTitles'
+
 import { getRandomMovie, getMovieImages } from '@/services/movieService'
 export const useMoviesStore = defineStore('movies', () => {
   const movieData = ref<{
@@ -14,16 +14,24 @@ export const useMoviesStore = defineStore('movies', () => {
   })
 
   const getMovie = async () => {
-    const randomMovie = await getRandomMovie()
-    if (randomMovie !== null) {
+    try {
+      const randomMovie = await getRandomMovie()
+      if (!randomMovie) {
+        throw new Error('Не удалось получить случайный фильм')
+      }
+
       movieData.value = {
         name: randomMovie.name || 'Название неизвестно',
         movieId: randomMovie.movieId,
         imageUrl: null,
       }
+
+      const imageUrl = await getMovieImages(movieData.value.movieId)
+      movieData.value.imageUrl = imageUrl
+    } catch (error) {
+      console.error('Ошибка при загрузке фильма:', error)
+      throw error
     }
-    const imageUrl = await getMovieImages(movieData.value.movieId)
-    movieData.value.imageUrl = imageUrl
   }
 
   return { movieData, getMovie }

@@ -2,12 +2,19 @@
 import { useMoviesStore } from '@/stores/movies'
 import { ref } from 'vue'
 import { movieTitles } from '@/data/movieTitles'
+import GameMenu from '@/components/GameMenu.vue'
+import LoadingScreen from '@/components/LoadingScreen.vue'
+import MovieCard from '@/components/MovieCard.vue'
+import AnswerButtons from '@/components/AnswerButtons.vue'
+import { useToast } from 'primevue/usetoast'
+const toast = useToast()
 const moviesStore = useMoviesStore()
 const answers = ref<string[]>([])
 const isAnswerChecked = ref<boolean>(false)
 const selectedAnswer = ref<string | null>(null)
 const loading = ref<boolean>(false)
-
+const counterCorrectAnswers = ref<number>(0)
+const isImageLoaded = ref<boolean>(false)
 const getRandomMovieTitles = (): string[] => {
   const filteredTitles = movieTitles.filter((title) => title !== moviesStore.movieData.name)
   const randomTitles = []
@@ -25,63 +32,91 @@ const createAnswers = () => {
   answers.value = [...getRandomMovieTitles()]
   answers.value.splice(randomIndex, 0, correctAnswer)
 }
+
 const resetDataAnswer = () => {
-  loading.value = true
   selectedAnswer.value = null
   isAnswerChecked.value = false
   answers.value = []
 }
-const fetchRandomMovie = async () => {
+
+const fetchRandomMovie = async (attempts: number = 5): Promise<void> => {
+  if (attempts <= 0) {
+    toast.add({
+      severity: 'error',
+      summary: 'Ошибка',
+      detail: 'Не удалось загрузить фильм после нескольких попыток',
+      life: 3000,
+    })
+    return
+  }
+
+  loading.value = true
   resetDataAnswer()
-  await moviesStore.getMovie()
-  createAnswers()
-  loading.value = false
+  isImageLoaded.value = false
+
+  try {
+    await moviesStore.getMovie()
+    createAnswers()
+
+    const image = new Image()
+    image.src = moviesStore.movieData.imageUrl || ''
+    image.onload = () => {
+      isImageLoaded.value = true
+      loading.value = false
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Ошибка при загрузке фильма:', error)
+
+      if (error.message === 'Нет доступных изображений') {
+        await fetchRandomMovie(attempts - 1)
+      }
+    }
+    loading.value = false
+  }
 }
 
 const checkAnswer = (option: string) => {
   if (isAnswerChecked.value) return
-
   selectedAnswer.value = option
+  if (selectedAnswer.value === moviesStore.movieData.name) {
+    counterCorrectAnswers.value++
+  }
   isAnswerChecked.value = true
 
   setTimeout(() => {
     fetchRandomMovie()
-  }, 2000)
+  }, 1000)
+}
+
+const newGame = () => {
+  fetchRandomMovie()
+  counterCorrectAnswers.value = 0
 }
 </script>
 
 <template>
+  <app-toast position="bottom-right" />
   <div class="movie-details">
     <h1>Угадай фильм по кадру</h1>
 
-    <button @click="fetchRandomMovie">Начать</button>
-    <div v-if="loading" class="loading-container">
-      <p>Загрузка фильма...</p>
-    </div>
+    <GameMenu :counter-correct-answers="counterCorrectAnswers" @start-new-game="newGame" />
 
-    <div class="game-container" v-if="loading === false">
-      <div class="movie-card" v-if="moviesStore.movieData.imageUrl && moviesStore.movieData.name">
-        <img
-          :src="moviesStore.movieData.imageUrl"
-          :alt="moviesStore.movieData.name"
-          class="poster"
-        />
-      </div>
-      <div class="playground-answers">
-        <button
-          v-for="(answer, index) in answers"
-          :key="index"
-          @click="checkAnswer(answer)"
-          :class="{
-            'button-answer': true,
-            correct: isAnswerChecked && answer === moviesStore.movieData.name,
-            incorrect:
-              isAnswerChecked && answer !== moviesStore.movieData.name && selectedAnswer === answer,
-          }"
-        >
-          {{ answer }}
-        </button>
-      </div>
+    <LoadingScreen v-if="loading" />
+
+    <div class="game-container" v-else-if="isImageLoaded">
+      <MovieCard
+        v-if="moviesStore.movieData.imageUrl && moviesStore.movieData.name"
+        :image-url="moviesStore.movieData.imageUrl"
+        :name="moviesStore.movieData.name"
+      />
+      <AnswerButtons
+        :answers="answers"
+        :is-answer-checked="isAnswerChecked"
+        :selected-answer="selectedAnswer"
+        :correct-answer="moviesStore.movieData.name || ''"
+        @select-answer="checkAnswer"
+      />
     </div>
   </div>
 </template>
@@ -89,131 +124,55 @@ const checkAnswer = (option: string) => {
 <style scoped>
 .movie-details {
   text-align: center;
+  width: 750px;
 }
-.movie-card {
-  margin-top: 20px;
-}
-.poster {
-  max-height: 450px;
-  width: 100%;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-top: 10px;
-}
-.playground-answers {
+
+.game-container {
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
-  width: 100%;
-}
-button {
-  padding: 10px;
-  background-color: rgb(36, 70, 138);
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: 0.3s;
-  color: #ffffff;
-  font-size: 1.5rem;
-}
-.button-answer {
-  width: 49%;
-
-  height: 50px;
-}
-button.correct {
-  background-color: rgb(110, 255, 129);
-  animation: bounce 0.5s ease;
-}
-
-button.incorrect {
-  background-color: rgb(254, 114, 114);
-  animation: shake 0.3s ease;
-}
-button:active {
-  transform: scale(0.9);
-}
-button:hover {
-  opacity: 0.9;
-}
-
-.loading-container {
-  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 450px;
-  font-size: 2rem;
-  color: white;
-}
-.game-container {
-  animation: increase 0.5s ease;
+  width: 750px;
+  margin: 0 auto;
+  min-height: 450px;
+  animation: increase 0.4s;
 }
 h1 {
   color: #ebebeb;
-}
-@keyframes bounce {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-@keyframes shake {
-  0% {
-    transform: rotate(0deg);
-  }
-  10% {
-    transform: rotate(4deg);
-  }
-  20% {
-    transform: rotate(0deg);
-  }
-  30% {
-    transform: rotate(-4deg);
-  }
-  40% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(4deg);
-  }
-  60% {
-    transform: rotate(0deg);
-  }
-  70% {
-    transform: rotate(-4deg);
-  }
-  80% {
-    transform: rotate(0deg);
-  }
-  90% {
-    transform: rotate(4deg);
-  }
-  100% {
-    transform: rotate(0deg);
-  }
 }
 
 @keyframes increase {
   0% {
     transform: scale(0);
   }
-  25% {
+  10% {
+    transform: scale(0.1);
+  }
+  20% {
+    transform: scale(0.2);
+  }
+  30% {
     transform: scale(0.3);
+  }
+  40% {
+    transform: scale(0.4);
   }
   50% {
     transform: scale(0.5);
   }
-  75% {
+  60% {
+    transform: scale(0.6);
+  }
+  70% {
     transform: scale(0.7);
   }
-  100% {
+  80% {
+    transform: scale(0.8);
+  }
+  90% {
+    transform: scale(0.9);
+  }
+  90% {
     transform: scale(1);
   }
 }

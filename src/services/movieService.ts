@@ -24,21 +24,24 @@ export const getMovieImages = async (movieId: number | null): Promise<string | n
       throw new Error('Нет доступных изображений')
     }
     const randomImage = data.items[Math.floor(Math.random() * data.items.length)]
+    if (!randomImage) {
+      return randomImage.data.items[0].imageUrl
+    }
     return randomImage.imageUrl
   } catch (error) {
     console.error('Ошибка при получении изображений:', error)
-    return null
+    throw error
   }
 }
 
 export const getRandomMovie = async (): Promise<Movie | null> => {
-  const pageCount = 13
+  const pageCount = 35
   const randomPage = () => {
-    return Math.floor(Math.random() * pageCount)
+    return Math.floor(Math.random() * pageCount) + 1
   }
   try {
     const response = await fetch(
-      `${BASE_URL}/collections?type=TOP_250_MOVIES&page=${randomPage()}`,
+      `${BASE_URL}/collections?type=TOP_POPULAR_ALL&page=${randomPage()}`,
       {
         method: 'GET',
         headers: {
@@ -53,6 +56,7 @@ export const getRandomMovie = async (): Promise<Movie | null> => {
     }
 
     const data = await response.json()
+
     const movies = data.items
     if (!movies || movies.length === 0) {
       throw new Error('Нет доступных фильмов')
@@ -63,6 +67,6 @@ export const getRandomMovie = async (): Promise<Movie | null> => {
     return { name: randomMovie.nameRu, movieId: randomMovie.kinopoiskId }
   } catch (error) {
     console.error('Ошибка при получении случайного фильма:', error)
-    return null
+    throw error
   }
 }

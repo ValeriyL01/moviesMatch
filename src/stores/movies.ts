@@ -12,10 +12,27 @@ export const useMoviesStore = defineStore('movies', () => {
     movieId: null,
     imageUrl: null,
   })
+  const difficultyGame = ref('легко')
 
-  const getMovie = async () => {
+  const getMovie = async (difficulty: string) => {
+    let collectionType: string
+    let pageCount: number
+
+    if (difficulty === 'легко') {
+      collectionType = 'TOP_250_MOVIES'
+      pageCount = 13
+    } else if (difficulty === 'сложно') {
+      collectionType = 'TOP_POPULAR_MOVIES'
+      pageCount = 35
+    } else {
+      throw new Error('Неверная сложность игры')
+    }
+    const randomPage = () => {
+      return Math.floor(Math.random() * pageCount) + 1
+    }
+
     try {
-      const randomMovie = await getRandomMovie()
+      const randomMovie = await getRandomMovie(randomPage(), collectionType)
       if (!randomMovie) {
         throw new Error('Не удалось получить случайный фильм')
       }
@@ -34,5 +51,5 @@ export const useMoviesStore = defineStore('movies', () => {
     }
   }
 
-  return { movieData, getMovie }
+  return { movieData, getMovie, difficultyGame }
 })

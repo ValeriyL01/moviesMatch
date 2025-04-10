@@ -1,12 +1,51 @@
 <script setup lang="ts">
 import { useMoviesStore } from '@/stores/movies'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { movieTitles } from '@/data/movieTitles'
 import GameMenu from '@/components/GameMenu.vue'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import MovieCard from '@/components/MovieCard.vue'
 import AnswerButtons from '@/components/AnswerButtons.vue'
 import { useToast } from 'primevue/usetoast'
+import { Fireworks } from 'fireworks-js'
+import { useRouter } from 'vue-router'
+const fireworkContainer = ref<HTMLElement | null>(null)
+let fireworksInstance: Fireworks | null = null // Ссылка на экземпляр Fireworks
+
+// Функция для запуска анимации фейерверка
+const startFireworkAnimation = () => {
+  if (fireworkContainer.value) {
+    fireworksInstance = new Fireworks(fireworkContainer.value, {
+      acceleration: 1.05,
+      friction: 0.97,
+      gravity: 1.5,
+      particles: 50,
+      explosion: 5,
+      intensity: 30,
+      flickering: 50,
+      lineStyle: 'round',
+      hue: {
+        min: 0,
+        max: 360,
+      },
+      delay: {
+        min: 30,
+        max: 60,
+      },
+    })
+
+    fireworksInstance.start() // Запуск анимации
+  }
+}
+
+// Функция для остановки анимации фейерверка
+const stopFireworkAnimation = () => {
+  if (fireworksInstance) {
+    fireworksInstance.stop() // Остановка анимации
+    fireworksInstance = null // Очищаем ссылку
+  }
+}
+const router = useRouter()
 const toast = useToast()
 const moviesStore = useMoviesStore()
 const answers = ref<string[]>([])
@@ -14,6 +53,7 @@ const isAnswerChecked = ref<boolean>(false)
 const selectedAnswer = ref<string | null>(null)
 const loading = ref<boolean>(false)
 const counterCorrectAnswers = ref<number>(0)
+const counterCorrectAnswersInRow = ref<number>(0)
 const isImageLoaded = ref<boolean>(false)
 const getRandomMovieTitles = (): string[] => {
   const filteredTitles = movieTitles.filter((title) => title !== moviesStore.movieData.name)
@@ -23,6 +63,7 @@ const getRandomMovieTitles = (): string[] => {
     randomTitles.push(filteredTitles[randomIndex])
     filteredTitles.splice(randomIndex, 1)
   }
+
   return randomTitles
 }
 
@@ -39,25 +80,25 @@ const resetDataAnswer = () => {
   answers.value = []
 }
 
-const fetchRandomMovie = async (attempts: number = 5): Promise<void> => {
-  if (attempts <= 0) {
+const congratulation = () => {
+  if (counterCorrectAnswersInRow.value === 2) {
     toast.add({
-      severity: 'error',
-      summary: 'Ошибка',
-      detail: 'Не удалось загрузить фильм после нескольких попыток',
-      life: 3000,
+      severity: 'success',
+      summary: 'Ура!',
+      detail: 'Поздравляем! Вы ответили верно 10 раз подряд!',
+      life: 4000,
     })
-    return
+    startFireworkAnimation()
   }
+}
 
+const fetchRandomMovie = async (): Promise<void> => {
   loading.value = true
-  resetDataAnswer()
   isImageLoaded.value = false
-
+  resetDataAnswer()
   try {
-    await moviesStore.getMovie()
+    await moviesStore.getMovie(moviesStore.difficultyGame)
     createAnswers()
-
     const image = new Image()
     image.src = moviesStore.movieData.imageUrl || ''
     image.onload = () => {
@@ -66,41 +107,59 @@ const fetchRandomMovie = async (attempts: number = 5): Promise<void> => {
     }
   } catch (error) {
     if (error instanceof Error) {
-      console.error('Ошибка при загрузке фильма:', error)
+      if (error.message === 'Ошибка HTTP: 402') {
+        toast.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: 'Превышен лимит запросов к серверу в сутки.',
+          life: 3000,
+        })
+      }
 
       if (error.message === 'Нет доступных изображений') {
-        await fetchRandomMovie(attempts - 1)
+        await fetchRandomMovie()
       }
     }
-    loading.value = false
   }
 }
 
 const checkAnswer = (option: string) => {
   if (isAnswerChecked.value) return
   selectedAnswer.value = option
+
   if (selectedAnswer.value === moviesStore.movieData.name) {
     counterCorrectAnswers.value++
+    counterCorrectAnswersInRow.value++
+  } else {
+    counterCorrectAnswersInRow.value = 0
   }
+
   isAnswerChecked.value = true
+  congratulation()
 
   setTimeout(() => {
+    stopFireworkAnimation()
     fetchRandomMovie()
-  }, 1000)
+  }, 3000)
 }
 
 const newGame = () => {
   fetchRandomMovie()
   counterCorrectAnswers.value = 0
+  counterCorrectAnswersInRow.value = 0
 }
+onMounted(() => {
+  newGame()
+})
 </script>
 
 <template>
   <app-toast position="bottom-right" />
-  <div class="movie-details">
-    <h1>Угадай фильм по кадру</h1>
 
-    <GameMenu :counter-correct-answers="counterCorrectAnswers" @start-new-game="newGame" />
+  <div class="game">
+    <h1>Угадай фильм по кадру</h1>
+    <div ref="fireworkContainer" class="firework-container"></div>
+    <GameMenu :counter-correct-answers="counterCorrectAnswers" @start-new-game="router.push('/')" />
 
     <LoadingScreen v-if="loading" />
 
@@ -122,7 +181,7 @@ const newGame = () => {
 </template>
 
 <style scoped>
-.movie-details {
+.game {
   text-align: center;
   width: 750px;
 }
@@ -135,12 +194,21 @@ const newGame = () => {
   width: 750px;
   margin: 0 auto;
   min-height: 450px;
-  animation: increase 0.4s;
+  animation: increase 0.3s;
 }
 h1 {
   color: #ebebeb;
 }
-
+.firework-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 9999;
+}
 @keyframes increase {
   0% {
     transform: scale(0);

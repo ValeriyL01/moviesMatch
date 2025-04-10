@@ -64,9 +64,7 @@ button.incorrect {
 button:active {
   transform: scale(0.9);
 }
-button:hover {
-  opacity: 0.9;
-}
+
 @keyframes bounce {
   0% {
     transform: scale(1);

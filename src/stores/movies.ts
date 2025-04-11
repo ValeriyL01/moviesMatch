@@ -12,16 +12,17 @@ export const useMoviesStore = defineStore('movies', () => {
     movieId: null,
     imageUrl: null,
   })
-  const difficultyGame = ref('легко')
-
+  const difficultyGame = ref('новичок')
+  const isBlackPicture = ref(false)
+  const isTime = ref(false)
   const getMovie = async (difficulty: string) => {
     let collectionType: string
     let pageCount: number
 
-    if (difficulty === 'легко') {
+    if (difficulty === 'новичок') {
       collectionType = 'TOP_250_MOVIES'
       pageCount = 13
-    } else if (difficulty === 'сложно') {
+    } else if (difficulty === 'киноман') {
       collectionType = 'TOP_POPULAR_MOVIES'
       pageCount = 35
     } else {
@@ -51,5 +52,5 @@ export const useMoviesStore = defineStore('movies', () => {
     }
   }
 
-  return { movieData, getMovie, difficultyGame }
+  return { movieData, getMovie, difficultyGame, isBlackPicture, isTime }
 })

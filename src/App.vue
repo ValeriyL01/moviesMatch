@@ -4,6 +4,7 @@ import { RouterView } from 'vue-router'
 
 <template>
   <div class="container">
+    <h1>Угадай фильм по кадру</h1>
     <RouterView />
   </div>
 </template>
@@ -15,6 +16,6 @@ import { RouterView } from 'vue-router'
   justify-content: center;
   max-width: 800px;
   margin: 0 auto;
-  color: #ffffff;
+  color: #ebebeb;
 }
 </style>

@@ -1,10 +1,7 @@
 
-
 #app {
-
   margin: 0 auto;
   padding: 2rem;
-
   font-weight: 400;
   font-family: 'Arial';
   background-image: url('/background.jpg');
@@ -14,9 +11,10 @@
   min-height: 100vh;
 }
 
-body{
+body {
   margin: 0;
 }
+
 button {
   padding: 10px;
   background-color: rgb(36, 70, 138);
@@ -29,8 +27,49 @@ button {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
+
 }
+
 button:hover {
-  opacity: 0.8;
+  background-color: rgb(25, 53, 109);
+}
+h1{
+  margin-bottom: 0px;
+}
+@media (max-width: 800px) {
+  button {
+    font-size: 1.2rem;
+  }
+  #app {
+    padding: 1rem;
+
+  }
+
+}
+
+@media (max-width: 500px) {
+
+  h1 {
+    font-size: 1.7rem;
+  }
+  h2 {
+    font-size: 1.4rem;
+  }
+  #app {
+    padding: 0.7rem;
+
+  }
+}
+@media (max-width: 400px) {
+
+  h1 {
+    font-size: 1.5rem;
+  }
+  h2 {
+    font-size: 1.3rem;
+  }
+  #app {
+    padding: 0.3rem;
+
+  }
 }

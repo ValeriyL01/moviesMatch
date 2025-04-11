@@ -10,15 +10,27 @@ const moviesStore = useMoviesStore()
 
 <template>
   <div class="container">
-    <h2>Выберете сложность игры</h2>
+    <h2>Выберите сложность игры</h2>
     <SelectButton
       v-model="moviesStore.difficultyGame"
-      :options="['легко', 'сложно']"
+      :options="['новичок', 'киноман']"
       size="large"
-      defaultValue="легко"
+      defaultValue="новичок"
       class="custom-select-button"
     />
-    <button @click="router.push('/game')">Начать игру</button>
+
+    <div class="checkboxContainer">
+      <div class="checkbox">
+        <CheckboxButton v-model="moviesStore.isBlackPicture" binary />
+        <label>черно-белые кадры</label>
+      </div>
+      <div class="checkbox">
+        <CheckboxButton v-model="moviesStore.isTime" binary />
+        <label>10 секунд на вопрос </label>
+      </div>
+    </div>
+
+    <button class="startGameButton" @click="router.push('/game')">Начать игру</button>
   </div>
 </template>
 
@@ -27,5 +39,29 @@ const moviesStore = useMoviesStore()
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+.checkboxContainer {
+  display: flex;
+  flex-direction: column;
+
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-top: 5px;
+  margin-bottom: 30px;
+}
+.checkbox {
+  display: flex;
+  gap: 10px;
+}
+.custom-select-button button:hover {
+  opacity: 1;
+}
+
+@media (max-width: 800px) {
+  .startGameButton {
+    font-size: 1.5rem;
+  }
 }
 </style>

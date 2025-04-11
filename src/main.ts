@@ -11,6 +11,7 @@ import App from './App.vue'
 import router from './router'
 import PrimeVue from 'primevue/config'
 import SelectButton from 'primevue/selectbutton'
+import Checkbox from 'primevue/checkbox'
 const app = createApp(App)
 
 app.use(PrimeVue, {
@@ -25,4 +26,5 @@ app.use(PrimeVue)
 
 app.component('app-toast', Toast)
 app.component('SelectButton', SelectButton)
+app.component('CheckboxButton', Checkbox)
 app.mount('#app')

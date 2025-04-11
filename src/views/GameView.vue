@@ -9,11 +9,33 @@ import AnswerButtons from '@/components/AnswerButtons.vue'
 import { useToast } from 'primevue/usetoast'
 import { Fireworks } from 'fireworks-js'
 import { useRouter } from 'vue-router'
+import ProgressBar from '@/components/ProgressBar.vue'
 const fireworkContainer = ref<HTMLElement | null>(null)
-let fireworksInstance: Fireworks | null = null // Ссылка на экземпляр Fireworks
+let fireworksInstance: Fireworks | null = null
+const router = useRouter()
+const toast = useToast()
+const moviesStore = useMoviesStore()
+const answers = ref<string[]>([])
+const isAnswerChecked = ref<boolean>(false)
+const selectedAnswer = ref<string | null>(null)
+const loading = ref<boolean>(false)
+const counterCorrectAnswers = ref<number>(0)
+const counterCorrectAnswersInRow = ref<number>(0)
+const isImageLoaded = ref<boolean>(false)
 
-// Функция для запуска анимации фейерверка
 const startFireworkAnimation = () => {
+  // Останавливаем и уничтожаем предыдущий экземпляр Fireworks
+  if (fireworksInstance) {
+    fireworksInstance.stop()
+    fireworksInstance = null
+  }
+
+  // Очищаем контейнер для фейерверков
+  if (fireworkContainer.value) {
+    fireworkContainer.value.innerHTML = '' // Очистка содержимого контейнера
+  }
+
+  // Создаем новый экземпляр Fireworks
   if (fireworkContainer.value) {
     fireworksInstance = new Fireworks(fireworkContainer.value, {
       acceleration: 1.05,
@@ -34,27 +56,20 @@ const startFireworkAnimation = () => {
       },
     })
 
-    fireworksInstance.start() // Запуск анимации
+    fireworksInstance.start()
   }
 }
 
-// Функция для остановки анимации фейерверка
 const stopFireworkAnimation = () => {
   if (fireworksInstance) {
-    fireworksInstance.stop() // Остановка анимации
-    fireworksInstance = null // Очищаем ссылку
+    fireworksInstance.stop()
+    fireworksInstance = null
+  }
+
+  if (fireworkContainer.value) {
+    fireworkContainer.value.innerHTML = ''
   }
 }
-const router = useRouter()
-const toast = useToast()
-const moviesStore = useMoviesStore()
-const answers = ref<string[]>([])
-const isAnswerChecked = ref<boolean>(false)
-const selectedAnswer = ref<string | null>(null)
-const loading = ref<boolean>(false)
-const counterCorrectAnswers = ref<number>(0)
-const counterCorrectAnswersInRow = ref<number>(0)
-const isImageLoaded = ref<boolean>(false)
 const getRandomMovieTitles = (): string[] => {
   const filteredTitles = movieTitles.filter((title) => title !== moviesStore.movieData.name)
   const randomTitles = []
@@ -81,14 +96,20 @@ const resetDataAnswer = () => {
 }
 
 const congratulation = () => {
-  if (counterCorrectAnswersInRow.value === 2) {
+  if (counterCorrectAnswersInRow.value === 10) {
     toast.add({
       severity: 'success',
       summary: 'Ура!',
       detail: 'Поздравляем! Вы ответили верно 10 раз подряд!',
-      life: 4000,
+      life: 5000,
     })
+    counterCorrectAnswersInRow.value = 0
+
     startFireworkAnimation()
+
+    setTimeout(() => {
+      stopFireworkAnimation()
+    }, 5000)
   }
 }
 
@@ -138,9 +159,8 @@ const checkAnswer = (option: string) => {
   congratulation()
 
   setTimeout(() => {
-    stopFireworkAnimation()
     fetchRandomMovie()
-  }, 3000)
+  }, 500)
 }
 
 const newGame = () => {
@@ -154,16 +174,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <app-toast position="bottom-right" />
+  <app-toast position="bottom-center" />
 
   <div class="game">
-    <h1>Угадай фильм по кадру</h1>
     <div ref="fireworkContainer" class="firework-container"></div>
+
     <GameMenu :counter-correct-answers="counterCorrectAnswers" @start-new-game="router.push('/')" />
 
     <LoadingScreen v-if="loading" />
 
     <div class="game-container" v-else-if="isImageLoaded">
+      <ProgressBar v-if="moviesStore.isTime" :time="10" @onComplete="fetchRandomMovie" />
       <MovieCard
         v-if="moviesStore.movieData.imageUrl && moviesStore.movieData.name"
         :image-url="moviesStore.movieData.imageUrl"
@@ -183,7 +204,9 @@ onMounted(() => {
 <style scoped>
 .game {
   text-align: center;
-  width: 750px;
+  width: 100%;
+  max-width: 750px;
+  margin: 0 auto;
 }
 
 .game-container {
@@ -191,14 +214,14 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 750px;
+  width: 100%;
+  max-width: 750px;
   margin: 0 auto;
   min-height: 450px;
   animation: increase 0.3s;
+  margin-top: 30px;
 }
-h1 {
-  color: #ebebeb;
-}
+
 .firework-container {
   position: absolute;
   top: 0;
@@ -209,6 +232,7 @@ h1 {
   pointer-events: none;
   z-index: 9999;
 }
+
 @keyframes increase {
   0% {
     transform: scale(0);
@@ -242,6 +266,27 @@ h1 {
   }
   90% {
     transform: scale(1);
+  }
+}
+@media (max-width: 800px) {
+  .game-container {
+    min-height: 400px;
+    padding: 1rem;
+    margin-top: 10px;
+  }
+}
+@media (max-width: 500px) {
+  .game-container {
+    min-height: 350px;
+    padding: 0.5rem;
+    margin-top: 5px;
+  }
+}
+@media (max-width: 400px) {
+  .game-container {
+    min-height: 300px;
+    padding: 0.5rem;
+    margin-top: 3px;
   }
 }
 </style>

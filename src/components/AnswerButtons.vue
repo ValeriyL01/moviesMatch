@@ -37,34 +37,37 @@ const emit = defineEmits<{
   margin-top: 20px;
   width: 100%;
 }
+
 .button-answer {
   width: 49%;
   height: 50px;
   padding: 10px;
-  background-color: rgb(36, 70, 138);
+
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: 0.3s;
   color: #ffffff;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
 }
+
 button.correct {
   background-color: rgb(110, 255, 129);
   animation: bounce 0.5s ease;
 }
+
 button.incorrect {
   background-color: rgb(254, 114, 114);
-  animation: shake 0.3s ease;
+  animation: shake 0.5s ease;
 }
+
 button:active {
   transform: scale(0.9);
 }
-
 @keyframes bounce {
   0% {
     transform: scale(1);
@@ -109,6 +112,22 @@ button:active {
   }
   100% {
     transform: rotate(0deg);
+  }
+}
+@media (max-width: 800px) {
+  .button-answer {
+    width: 100%;
+  }
+}
+@media (max-width: 500px) {
+  .button-answer {
+    width: 100%;
+    font-size: 1rem;
+  }
+}
+@media (max-width: 400px) {
+  .button-answer {
+    font-size: 0.9rem;
   }
 }
 </style>

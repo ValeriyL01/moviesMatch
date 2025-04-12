@@ -1,8 +1,14 @@
 # moviesmatch
 
-Эта игра в которой нужно угадать фильм по кадру. Написана на Vue 3
+Эта игра в которой нужно угадать фильм по кадру. 
 
-
+## Tech Stack
+* Vue 3 Composition
+* TypeScript
+* Pinia
+* Primevue
+* Prettier
+* EsLint
 ## Project Setup
 
 ```sh

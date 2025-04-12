@@ -7,11 +7,10 @@ import LoadingScreen from '@/components/LoadingScreen.vue'
 import MovieCard from '@/components/MovieCard.vue'
 import AnswerButtons from '@/components/AnswerButtons.vue'
 import { useToast } from 'primevue/usetoast'
-import { Fireworks } from 'fireworks-js'
+
 import { useRouter } from 'vue-router'
 import ProgressBar from '@/components/ProgressBar.vue'
-const fireworkContainer = ref<HTMLElement | null>(null)
-let fireworksInstance: Fireworks | null = null
+
 const router = useRouter()
 const toast = useToast()
 const moviesStore = useMoviesStore()
@@ -19,57 +18,9 @@ const answers = ref<string[]>([])
 const isAnswerChecked = ref<boolean>(false)
 const selectedAnswer = ref<string | null>(null)
 const loading = ref<boolean>(false)
-const counterCorrectAnswers = ref<number>(0)
 const counterCorrectAnswersInRow = ref<number>(0)
 const isImageLoaded = ref<boolean>(false)
 
-const startFireworkAnimation = () => {
-  // Останавливаем и уничтожаем предыдущий экземпляр Fireworks
-  if (fireworksInstance) {
-    fireworksInstance.stop()
-    fireworksInstance = null
-  }
-
-  // Очищаем контейнер для фейерверков
-  if (fireworkContainer.value) {
-    fireworkContainer.value.innerHTML = '' // Очистка содержимого контейнера
-  }
-
-  // Создаем новый экземпляр Fireworks
-  if (fireworkContainer.value) {
-    fireworksInstance = new Fireworks(fireworkContainer.value, {
-      acceleration: 1.05,
-      friction: 0.97,
-      gravity: 1.5,
-      particles: 50,
-      explosion: 5,
-      intensity: 30,
-      flickering: 50,
-      lineStyle: 'round',
-      hue: {
-        min: 0,
-        max: 360,
-      },
-      delay: {
-        min: 30,
-        max: 60,
-      },
-    })
-
-    fireworksInstance.start()
-  }
-}
-
-const stopFireworkAnimation = () => {
-  if (fireworksInstance) {
-    fireworksInstance.stop()
-    fireworksInstance = null
-  }
-
-  if (fireworkContainer.value) {
-    fireworkContainer.value.innerHTML = ''
-  }
-}
 const getRandomMovieTitles = (): string[] => {
   const filteredTitles = movieTitles.filter((title) => title !== moviesStore.movieData.name)
   const randomTitles = []
@@ -104,12 +55,6 @@ const congratulation = () => {
       life: 5000,
     })
     counterCorrectAnswersInRow.value = 0
-
-    startFireworkAnimation()
-
-    setTimeout(() => {
-      stopFireworkAnimation()
-    }, 5000)
   }
 }
 
@@ -147,10 +92,17 @@ const fetchRandomMovie = async (): Promise<void> => {
 const checkAnswer = (option: string) => {
   if (isAnswerChecked.value) return
   selectedAnswer.value = option
+  moviesStore.totalAnswers++
 
   if (selectedAnswer.value === moviesStore.movieData.name) {
-    counterCorrectAnswers.value++
+    moviesStore.counterCorrectAnswers++
+
     counterCorrectAnswersInRow.value++
+    if (moviesStore.counterCorrectAnswers === moviesStore.moviesToWin) {
+      setTimeout(() => {
+        router.push('/result')
+      }, 700)
+    }
   } else {
     counterCorrectAnswersInRow.value = 0
   }
@@ -160,13 +112,14 @@ const checkAnswer = (option: string) => {
 
   setTimeout(() => {
     fetchRandomMovie()
-  }, 500)
+  }, 700)
 }
 
 const newGame = () => {
   fetchRandomMovie()
-  counterCorrectAnswers.value = 0
+  moviesStore.counterCorrectAnswers = 0
   counterCorrectAnswersInRow.value = 0
+  moviesStore.totalAnswers = 0
 }
 onMounted(() => {
   newGame()
@@ -177,9 +130,7 @@ onMounted(() => {
   <app-toast position="bottom-center" />
 
   <div class="game">
-    <div ref="fireworkContainer" class="firework-container"></div>
-
-    <GameMenu :counter-correct-answers="counterCorrectAnswers" @start-new-game="router.push('/')" />
+    <GameMenu @start-new-game="router.push('/')" />
 
     <LoadingScreen v-if="loading" />
 
@@ -219,18 +170,7 @@ onMounted(() => {
   margin: 0 auto;
   min-height: 450px;
   animation: increase 0.3s;
-  margin-top: 30px;
-}
-
-.firework-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 9999;
+  margin-top: 10px;
 }
 
 @keyframes increase {

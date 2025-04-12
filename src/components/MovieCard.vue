@@ -32,14 +32,14 @@ defineProps<{
   filter: grayscale(100%);
 }
 
-/* @media (max-width: 800px) {
+@media (max-width: 800px) {
   .poster {
     max-height: 400px;
   }
 }
 @media (max-width: 500px) {
   .poster {
-    max-height: 350px;
+    max-height: 300px;
   }
-} */
+}
 </style>

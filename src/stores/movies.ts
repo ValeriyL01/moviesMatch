@@ -15,6 +15,9 @@ export const useMoviesStore = defineStore('movies', () => {
   const difficultyGame = ref('новичок')
   const isBlackPicture = ref(false)
   const isTime = ref(false)
+  const moviesToWin = ref(50)
+  const counterCorrectAnswers = ref(0)
+  const totalAnswers = ref(0)
   const getMovie = async (difficulty: string) => {
     let collectionType: string
     let pageCount: number
@@ -52,5 +55,14 @@ export const useMoviesStore = defineStore('movies', () => {
     }
   }
 
-  return { movieData, getMovie, difficultyGame, isBlackPicture, isTime }
+  return {
+    movieData,
+    getMovie,
+    difficultyGame,
+    isBlackPicture,
+    isTime,
+    moviesToWin,
+    counterCorrectAnswers,
+    totalAnswers,
+  }
 })

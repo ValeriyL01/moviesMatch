@@ -13,11 +13,11 @@ const progressWidth = computed(() => {
 </script>
 
 <template>
-  <div class="game-menu">
+  <div class="gameMenu">
     <button @click="emit('startNewGame')">Начать новую игру</button>
-    <div class="progress-container">
-      <div class="progress-bar" :style="{ width: progressWidth + '%' }"></div>
-      <div class="progress-text">
+    <div class="progressContainer">
+      <div class="progressBar" :style="{ width: progressWidth + '%' }"></div>
+      <div class="progressText">
         {{ moviesStore.counterCorrectAnswers }}/{{ moviesStore.moviesToWin }}
       </div>
     </div>
@@ -25,7 +25,7 @@ const progressWidth = computed(() => {
 </template>
 
 <style scoped>
-.game-menu {
+.gameMenu {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -33,7 +33,7 @@ const progressWidth = computed(() => {
   gap: 10px;
 }
 
-.progress-container {
+.progressContainer {
   position: relative;
   width: 50%;
   height: 48px;
@@ -42,13 +42,13 @@ const progressWidth = computed(() => {
   overflow: hidden;
 }
 
-.progress-bar {
+.progressBar {
   height: 100%;
   background-color: #82d185;
   transition: width 0.3s ease;
 }
 
-.progress-text {
+.progressText {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -73,16 +73,16 @@ const progressWidth = computed(() => {
 }
 
 @media (max-width: 800px) {
-  .game-menu {
+  .gameMenu {
     flex-direction: column;
     font-size: 1.2rem;
   }
-  .progress-container {
+  .progressContainer {
     height: 42px;
   }
 }
 @media (max-width: 500px) {
-  .game-menu {
+  .gameMenu {
     font-size: 1rem;
   }
 }

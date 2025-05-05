@@ -12,13 +12,13 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="playground-answers">
+  <div class="playgroundAnswers">
     <button
       v-for="(answer, index) in answers"
       :key="index"
       @click="emit('selectAnswer', answer)"
       :class="{
-        'button-answer': true,
+        buttonAnswer: true,
         correct: isAnswerChecked && answer === correctAnswer,
         incorrect: isAnswerChecked && answer !== correctAnswer && selectedAnswer === answer,
       }"
@@ -29,7 +29,7 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
-.playground-answers {
+.playgroundAnswers {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -38,7 +38,7 @@ const emit = defineEmits<{
   width: 100%;
 }
 
-.button-answer {
+.buttonAnswer {
   width: 49%;
   height: 50px;
   padding: 10px;
@@ -115,18 +115,17 @@ button:active {
   }
 }
 @media (max-width: 800px) {
-  .button-answer {
+  .buttonAnswer {
     width: 100%;
   }
 }
 @media (max-width: 500px) {
-  .button-answer {
-    width: 100%;
+  .buttonAnswer {
     font-size: 1rem;
   }
 }
 @media (max-width: 400px) {
-  .button-answer {
+  .buttonAnswer {
     font-size: 0.9rem;
   }
 }

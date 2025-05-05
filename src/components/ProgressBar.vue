@@ -67,17 +67,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="progress-container">
+  <div class="progressContainer">
     <div
-      class="progress-bar"
-      :class="{ 'no-transition': isTransitionDisabled }"
+      class="progressBar"
+      :class="{ noTransition: isTransitionDisabled }"
       :style="{ width: progressWidth + '%', backgroundColor: computedBackgroundColor }"
     ></div>
   </div>
 </template>
 
 <style scoped>
-.progress-container {
+.progressContainer {
   position: relative;
   width: 100%;
   height: 13px;
@@ -86,13 +86,13 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.progress-bar {
+.progressBar {
   height: 100%;
   background-color: rgb(125, 230, 111);
   transition: width 0.3s ease;
 }
 
-.progress-bar.no-transition {
+.progressBar.noTransition {
   transition: none;
 }
 </style>

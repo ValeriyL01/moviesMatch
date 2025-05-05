@@ -134,10 +134,7 @@ const getStartView = () => {
 
 <style scoped>
 .container {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 20px;
 }
 .firework-container {
   position: absolute;

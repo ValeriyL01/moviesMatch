@@ -21,7 +21,7 @@ const loading = ref<boolean>(false)
 const counterCorrectAnswersInRow = ref<number>(0)
 const isImageLoaded = ref<boolean>(false)
 
-const getRandomMovieTitles = (): string[] => {
+const getRandomMovieTitles = () => {
   const filteredTitles = movieTitles.filter((title) => title !== moviesStore.movieData.name)
   const randomTitles = []
   for (let i = 0; i < 3; i++) {
@@ -30,13 +30,14 @@ const getRandomMovieTitles = (): string[] => {
     filteredTitles.splice(randomIndex, 1)
   }
 
-  return randomTitles
+  return { randomTitles }
 }
 
 const createAnswers = () => {
+  const { randomTitles } = getRandomMovieTitles()
   const correctAnswer = moviesStore.movieData.name!
   const randomIndex = Math.floor(Math.random() * 4)
-  answers.value = [...getRandomMovieTitles()]
+  answers.value = [...randomTitles]
   answers.value.splice(randomIndex, 0, correctAnswer)
 }
 
@@ -134,7 +135,7 @@ onMounted(() => {
 
     <LoadingScreen v-if="loading" />
 
-    <div class="game-container" v-else-if="isImageLoaded">
+    <div class="gameContainer" v-else-if="isImageLoaded">
       <ProgressBar v-if="moviesStore.isTime" :time="10" @onComplete="fetchRandomMovie" />
       <MovieCard
         v-if="moviesStore.movieData.imageUrl && moviesStore.movieData.name"
@@ -160,7 +161,7 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-.game-container {
+.gameContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -174,56 +175,29 @@ onMounted(() => {
 }
 
 @keyframes increase {
-  0% {
+  from {
     transform: scale(0);
   }
-  10% {
-    transform: scale(0.1);
-  }
-  20% {
-    transform: scale(0.2);
-  }
-  30% {
-    transform: scale(0.3);
-  }
-  40% {
-    transform: scale(0.4);
-  }
-  50% {
-    transform: scale(0.5);
-  }
-  60% {
-    transform: scale(0.6);
-  }
-  70% {
-    transform: scale(0.7);
-  }
-  80% {
-    transform: scale(0.8);
-  }
-  90% {
-    transform: scale(0.9);
-  }
-  90% {
+  to {
     transform: scale(1);
   }
 }
 @media (max-width: 800px) {
-  .game-container {
+  .gameContainer {
     min-height: 400px;
     padding: 1rem;
     margin-top: 10px;
   }
 }
 @media (max-width: 500px) {
-  .game-container {
+  .gameContainer {
     min-height: 350px;
     padding: 0.5rem;
     margin-top: 5px;
   }
 }
 @media (max-width: 400px) {
-  .game-container {
+  .gameContainer {
     min-height: 300px;
     padding: 0.5rem;
     margin-top: 3px;

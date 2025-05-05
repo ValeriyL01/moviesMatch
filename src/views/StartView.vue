@@ -107,5 +107,11 @@ const moviesStore = useMoviesStore()
   .startGameButton {
     font-size: 1.5rem;
   }
+  .sliderContainer h4 {
+    font-size: 0.9rem;
+  }
+  .sliderWrapper {
+    padding-left: 10px;
+  }
 }
 </style>

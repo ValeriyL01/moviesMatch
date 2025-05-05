@@ -1,5 +1,5 @@
 const BASE_URL = 'https://kinopoiskapiunofficial.tech/api/v2.2/films'
-const API_KEY = '7c7255d9-f35f-4999-9b31-4a740453eaf8'
+const API_KEY = '23092107-34ed-4232-a087-98b022dc89b1'
 type Movie = {
   name: string
   movieId: number

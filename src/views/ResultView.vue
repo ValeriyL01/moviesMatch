@@ -99,7 +99,7 @@ const startFireworkAnimation = () => {
   }
 }
 
-const stopFireworkAnimation = () => {
+const stopFireworkAnimation = (): void => {
   if (fireworksInstance) {
     fireworksInstance.stop()
     fireworksInstance = null
@@ -117,7 +117,7 @@ onMounted(() => {
   }, 10000)
 })
 
-const getStartView = () => {
+const getStartView = (): void => {
   router.push('/')
 }
 </script>

@@ -21,8 +21,10 @@ const selectedAnswer = ref<string | null>(null)
 const loading = ref<boolean>(false)
 const counterCorrectAnswersInRow = ref<number>(0)
 const isImageLoaded = ref<boolean>(false)
-
-const getRandomMovieTitles = () => {
+type RandomMovieTitlesResult = {
+  randomTitles: string[]
+}
+const getRandomMovieTitles = (): RandomMovieTitlesResult => {
   const filteredTitles = movieTitles.filter((title) => title !== moviesStore.movieData.name)
   const randomTitles = []
   const numberIncorrectAnswers = 3
@@ -35,7 +37,7 @@ const getRandomMovieTitles = () => {
   return { randomTitles }
 }
 
-const createAnswers = () => {
+const createAnswers = (): void => {
   const maxAnswersCount = 4
   const { randomTitles } = getRandomMovieTitles()
   const correctAnswer = moviesStore.movieData.name!
@@ -44,13 +46,13 @@ const createAnswers = () => {
   answers.value.splice(randomIndex, 0, correctAnswer)
 }
 
-const resetDataAnswer = () => {
+const resetDataAnswer = (): void => {
   selectedAnswer.value = null
   isAnswerChecked.value = false
   answers.value = []
 }
 
-const congratulation = () => {
+const congratulation = (): void => {
   if (counterCorrectAnswersInRow.value === 10) {
     toast.add({
       severity: 'success',
@@ -61,7 +63,15 @@ const congratulation = () => {
     counterCorrectAnswersInRow.value = 0
   }
 }
+const loadImage = (imageUrl: string | null): void => {
+  const image = new Image()
+  image.src = imageUrl || ''
 
+  image.onload = () => {
+    isImageLoaded.value = true
+    loading.value = false
+  }
+}
 const fetchRandomMovie = async (): Promise<void> => {
   loading.value = true
   isImageLoaded.value = false
@@ -69,12 +79,7 @@ const fetchRandomMovie = async (): Promise<void> => {
   try {
     await moviesStore.getMovie(moviesStore.difficultyGame)
     createAnswers()
-    const image = new Image()
-    image.src = moviesStore.movieData.imageUrl || ''
-    image.onload = () => {
-      isImageLoaded.value = true
-      loading.value = false
-    }
+    loadImage(moviesStore.movieData.imageUrl)
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === 'Ошибка HTTP: 402') {
@@ -93,24 +98,22 @@ const fetchRandomMovie = async (): Promise<void> => {
   }
 }
 
-const checkAnswer = (option: string) => {
-  if (isAnswerChecked.value) return
-  selectedAnswer.value = option
-  moviesStore.totalAnswers++
+const handleCorrectAnswer = (): void => {
+  moviesStore.counterCorrectAnswers++
+  counterCorrectAnswersInRow.value++
 
-  if (selectedAnswer.value === moviesStore.movieData.name) {
-    moviesStore.counterCorrectAnswers++
-
-    counterCorrectAnswersInRow.value++
-    if (moviesStore.counterCorrectAnswers === moviesStore.moviesToWin) {
-      setTimeout(() => {
-        router.push('/result')
-      }, 700)
-    }
-  } else {
-    counterCorrectAnswersInRow.value = 0
+  if (moviesStore.counterCorrectAnswers === moviesStore.moviesToWin) {
+    setTimeout(() => {
+      router.push('/result')
+    }, 700)
   }
+}
 
+const handleIncorrectAnswer = (): void => {
+  counterCorrectAnswersInRow.value = 0
+}
+
+const resetAndFetchNewMovie = (): void => {
   isAnswerChecked.value = true
   congratulation()
 
@@ -119,6 +122,20 @@ const checkAnswer = (option: string) => {
   }, 700)
 }
 
+const checkAnswer = (answer: string): void => {
+  if (isAnswerChecked.value) return
+
+  selectedAnswer.value = answer
+  moviesStore.totalAnswers++
+
+  if (selectedAnswer.value === moviesStore.movieData.name) {
+    handleCorrectAnswer()
+  } else {
+    handleIncorrectAnswer()
+  }
+
+  resetAndFetchNewMovie()
+}
 const newGame = () => {
   fetchRandomMovie()
   moviesStore.counterCorrectAnswers = 0

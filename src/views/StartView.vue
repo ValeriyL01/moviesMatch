@@ -3,17 +3,17 @@ import SelectButton from 'primevue/selectbutton'
 
 import { useRouter } from 'vue-router'
 import { useMoviesStore } from '@/stores/movies'
+import { DifficultyLevel } from '@/types/types'
 
 const router = useRouter()
 const moviesStore = useMoviesStore()
 </script>
-
 <template>
   <div class="container">
     <h2>Выберите сложность игры</h2>
     <SelectButton
       v-model="moviesStore.difficultyGame"
-      :options="['новичок', 'киноман']"
+      :options="[DifficultyLevel.Beginner, DifficultyLevel.MovieFan]"
       size="large"
       defaultValue="новичок"
       class="custom-select-button"

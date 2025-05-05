@@ -1,3 +1,5 @@
+import { getRandomNumber } from '@/utils/getRandomNumber'
+
 const BASE_URL = 'https://kinopoiskapiunofficial.tech/api/v2.2/films'
 const API_KEY = '23092107-34ed-4232-a087-98b022dc89b1'
 type Movie = {
@@ -23,7 +25,7 @@ export const getMovieImages = async (movieId: number | null): Promise<string | n
     if (data.items.length === 0) {
       throw new Error('Нет доступных изображений')
     }
-    const randomImage = data.items[Math.floor(Math.random() * data.items.length)]
+    const randomImage = data.items[getRandomNumber(data.items.length)]
     if (!randomImage) {
       return randomImage.data.items[0].imageUrl
     }
@@ -61,7 +63,7 @@ export const getRandomMovie = async (
       throw new Error('Нет доступных фильмов')
     }
 
-    const randomMovie = movies[Math.floor(Math.random() * movies.length)]
+    const randomMovie = movies[getRandomNumber(movies.length)]
 
     return { name: randomMovie.nameRu, movieId: randomMovie.kinopoiskId }
   } catch (error) {

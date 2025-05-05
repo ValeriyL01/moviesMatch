@@ -10,6 +10,7 @@ import { useToast } from 'primevue/usetoast'
 
 import { useRouter } from 'vue-router'
 import ProgressBar from '@/components/ProgressBar.vue'
+import { getRandomNumber } from '@/utils/getRandomNumber'
 
 const router = useRouter()
 const toast = useToast()
@@ -24,8 +25,9 @@ const isImageLoaded = ref<boolean>(false)
 const getRandomMovieTitles = () => {
   const filteredTitles = movieTitles.filter((title) => title !== moviesStore.movieData.name)
   const randomTitles = []
-  for (let i = 0; i < 3; i++) {
-    const randomIndex = Math.floor(Math.random() * filteredTitles.length)
+  const numberIncorrectAnswers = 3
+  for (let i = 0; i < numberIncorrectAnswers; i++) {
+    const randomIndex = getRandomNumber(filteredTitles.length)
     randomTitles.push(filteredTitles[randomIndex])
     filteredTitles.splice(randomIndex, 1)
   }
@@ -34,9 +36,10 @@ const getRandomMovieTitles = () => {
 }
 
 const createAnswers = () => {
+  const maxAnswersCount = 4
   const { randomTitles } = getRandomMovieTitles()
   const correctAnswer = moviesStore.movieData.name!
-  const randomIndex = Math.floor(Math.random() * 4)
+  const randomIndex = getRandomNumber(maxAnswersCount)
   answers.value = [...randomTitles]
   answers.value.splice(randomIndex, 0, correctAnswer)
 }
